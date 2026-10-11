@@ -8,7 +8,7 @@ import img2 from './assets/img2.png'
 import img3 from './assets/img3.png'
 import img4 from './assets/img4.png'
 import img5 from './assets/img5.png'
-import Admin from './components/admin';
+import Admin from './components/Admin';
 import Home from './components/Home'
 import LoginModal from './components/LoginModal';
 
