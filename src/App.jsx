@@ -1,5 +1,5 @@
 import { BrowserRouter  as Router , Routes, Route , useNavigate, Navigate} from 'react-router-dom'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Card from './components/Card';
@@ -11,11 +11,69 @@ import img5 from './assets/img5.png'
 import Admin from './components/Admin';
 import Home from './components/Home'
 import LoginModal from './components/LoginModal';
-
+import {supabase} from './supabase'
 
 
 function AppContent(){
     const navigate = useNavigate();
+
+    const [openItems, setOpenItems] = useState([])
+    const [closedTrades, setClosedTrades] = useState([])
+    const ownerUid = '2b79a19c-ebd5-4073-8ca8-2aea836f7c8f'
+
+    useEffect(() => {
+        const openChannel = supabase.channel('open-items')
+        .on('postgres_changes', {event: '*', schema: 'pubblic', table:'items', filter: `owner_uid=eq.${ownerUid}, status=eq.open` },
+        payload => {
+            fetchItems()
+        })
+        .subscribe()
+
+        const closedChannel = supabase.channel('closed-items')
+        .on('postgres_changes', {event: '*', schema: 'pubblic', table:'items', filter: `owner_uid=eq.${ownerUid}, status=eq.closed` },
+             payload => {
+            fetchItems()
+        })
+        .subscribe()
+        fetchItems()
+
+        return() => {
+            supabase.removeChannel(openChannel)
+            supabase.removeChannel(closedChannel)
+        };
+    },[]);
+    
+    const fetchItems = async() => {
+        try {
+            const {data: open, error: errOpen} = await supabase
+            .from('items')
+            .select('*')
+            .eq('owner_uid', ownerUid)
+            .eq('status', 'open')
+            .order('create_at', {ascending:false})
+
+            const {data: close, error: errClosed} = await supabase
+            .from('items')
+            .select('*')
+            .eq('owner_uid', ownerUid)
+            .eq('status', 'open')
+            .order('create_at', {ascending:false})
+
+            if (errOpen) console.error('Error fetching open items:'. errOpen)
+            if (errClosed) console.error('Error fetching closed items:'. errClosed)
+
+                setOpenItems(open || [])
+                setClosedTrades(closed || [])
+
+        }
+
+        catch (error) {
+            console.error('Fetch items failed: ', error)
+        }
+    }
+
+
+
     const [isLoggedIn ,setIsLoggedIn] = useState(false)
     const [showLogin ,setShowLogin] = useState(false)
     const [offers, setOffers] = useState({})
@@ -37,52 +95,7 @@ function AppContent(){
         setIsLoggedIn(false)
     }
 
-    const openItems = [{
-        id: 1,
-        image: img1,
-        title: 'old car',
-        rating: 3,
-        description:' old, rundown, still working engine.',
-        accepts: 'Cash, scooter, items of simular value'
-    },
-    {
-        id: 2,
-        image: img2,
-        title: 'Comic Collection',
-        rating: 4,
-        description:' Near mint condition, minor pressings on the corners.',
-        accepts: 'Other books, best if comics'
-    },
-    {
-        id: 3,
-        image: img3,
-        title: 'PSA 10 1st Edition Base Set Charizard',
-        rating: 5,
-        description:'Perfect corners, no damage on cassing.',
-        accepts: 'Cash only'
-    },
-    ]
 
-    const closedTrades = [
-        {
-            id: 4,
-            image: img4,
-            title: 'Limited Posters',
-            rating: 2,
-            description:'Old and bit worn down.',
-            date:'2026-1-06',
-            summary:'Traded for old comics from Michael'
-        },
-        {
-            id: 5,
-            image: img5,
-            title: 'Cool Shades',
-            rating: 4,
-            description:'Though second handed basically brand new.',
-            date:'2026-3-29',
-            summary:'Traded for makeup from Lincy '
-        }
-]
  
     return(
         <div className="mid-h-screen bg-950-100 flex flex-col">
