@@ -1,16 +1,26 @@
 import Card from './Card';
+import { supabase } from '../supabase';
 import {useState} from 'react';
 import ProposeSwapModal from './ProposeSwapModal'
 
 function Home({ openItems, closedTrades, offers, setOffers}){
     const [selectedItem, setSelectedItem] = useState(null)
-    const handlePropose = (itemId, newOffers) => {
-        setOffers(prev => ({
-            ...prev,
-            [itemId]: [...prev[itemId] || [], {id: Date.now(), ...newOffer}]
-        }))
-        setSelectedItem(null)
+
+    const handlePropose = async(itemId, newOffer) => {
+        try {
+            const { error } = await supabase
+            .from('offers')
+            .insert({item_id: itemId, name: newOffer.name, contact: newOffer.contact, ProposeSwapModa: newOffer.proposal })
+            if (error) throw error
+            setSelectedItem(null)
+        }
+        catch{
+            console.error('Error submitting offer: ', error.message)
+            alert('Failed to submit offer. Check console for details')
+        }
     }
+
+   
 
     return(
         <div className="maxw-w-6xl mx-auto flex flex-col gap-10">

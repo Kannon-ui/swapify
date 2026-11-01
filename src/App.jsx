@@ -35,11 +35,21 @@ function AppContent(){
             fetchItems()
         })
         .subscribe()
+        
+
+        const offersChannel = supabase.channel('offers')
+        .on('postgres_changes', {event: '*', schema: 'public', table: 'offers'}, payload =>
+        {
+            fetchOffers();
+        }
+        )
         fetchItems()
+        fetchOffers()
 
         return() => {
             supabase.removeChannel(openChannel)
             supabase.removeChannel(closedChannel)
+            supabase.removeChannel(offersChannel)
         };
     },[]);
     
@@ -72,7 +82,29 @@ function AppContent(){
         }
     }
 
+    const fetchOffers = async() => {
+        try{
+            const{ data, error } = await supabase
+            .from('offers')
+            .select('*')
+            .order('created_at', {ascending:false})
 
+            if (error){
+                console.error('Error fetching offers: ', error)
+                return
+            }
+            
+            const grouped = {}
+            data.forEach(offer => {
+                if(!grouped[offer.item_id]) grouped[offer.item_id] = []
+                grouped[offer.itm_id].push(offer)
+            })
+        }
+
+        catch(error) {
+            console.error('Fetch offers failed: ', error)
+        }
+    }
 
     const [isLoggedIn ,setIsLoggedIn] = useState(false)
     const [showLogin ,setShowLogin] = useState(false)
@@ -110,7 +142,7 @@ function AppContent(){
             <main className="flex-grow p-4 pt-20">
                 <div className='max-w-6x1 mx-auto'>
                     <Routes>
-                        <Route path ="/" element = { <Home openItems={openItems} closedTrades={closedTrades} offers = {offers} setOffers = {setOffers} /> } />
+                        <Route path ="/" element = { <Home openItems={openItems} closedTrades={closedTrades} offers = {offers} /> } />
                         <Route  path = "/admin" 
                             element = {isLoggedIn ? 
                             <Admin openItems={openItems} 
