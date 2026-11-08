@@ -10,10 +10,10 @@ function Navbar({className ='', isLoggedIn, onLogout, onLoginClick}){
             </div>
             
             {isLoggedIn ?
-            (<button className='bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100'>
+            (<button onClick={onLogout} className='bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100'>
                 Logout
             </button>):
-            (<button className='bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100'>
+            (<button onClick={onLoginClick} className='bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100'>
                 Owner Login
             </button>)}
             

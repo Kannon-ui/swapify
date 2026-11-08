@@ -113,7 +113,7 @@ function AppContent(){
 
 
     const handleLogin = (pin) =>{
-        if (pin = '1234'){
+        if (pin === '1234'){
             setIsLoggedIn(true)
             setShowLogin(false)
             navigate('/admin')
@@ -153,6 +153,12 @@ function AppContent(){
                     </Routes>
                 </div>                
             </main>
+            {showLogin && (
+                <LoginModal
+                    onClose={() => setShowLogin(false)}
+                    onSubmit={handleLogin}
+                />
+            )}
             <Footer/>
         </div>
     )
