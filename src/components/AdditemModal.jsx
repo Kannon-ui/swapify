@@ -5,11 +5,11 @@ function AddItemModal({ onClose, onSubmit }) {
   const [image_url, setImageUrl] = useState('');
   const [rating, setRating] = useState('3');
   const [description, setDescription] = useState('');
-  const [accepts, setAccepts] = useState('');
+  const [accept, setAccept] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ title, image_url, rating, description, accepts });
+    onSubmit({ title, image_url, rating, description, accept });
   };
 
   return (
@@ -23,7 +23,7 @@ function AddItemModal({ onClose, onSubmit }) {
             {[1,2,3,4,5].map(n => <option key={n} value={n}>{n} Stars</option>)}
           </select>
           <textarea placeholder="Description" value={description} onChange={e => setDescription(e.target.value)} required className="w-full p-2 border mb-3 h-24" />
-          <input type="text" placeholder="Accepts (e.g. Toys or books)" value={accepts} onChange={e => setAccepts(e.target.value)} required className="w-full p-2 border mb-4" />
+          <input type="text" placeholder="Accept (e.g. Toys or books)" value={accept} onChange={e => setAccept(e.target.value)} required className="w-full p-2 border mb-4" />
 
           <div className="flex justify-end gap-3">
             <button type="button" onClick={onClose} className="px-5 py-2 bg-gray-300">Cancel</button>

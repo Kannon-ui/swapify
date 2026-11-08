@@ -1,5 +1,5 @@
-function Card({type, image_url, title, rating, description, accepts, date, summary, onProposeSwap, isOwner = false, offers = []}){
-    const tags = accepts ? accepts.split(' or ').map(tag=> tag.trim()) : [];
+function Card({type, image_url, title, rating, description, accept, date, summary, onProposeSwap, isOwner = false, offers = []}){
+    const tags = accept ? accept.split(' or ').map(tag=> tag.trim()) : [];
     return(
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-1g hover:scale-105 transition duration-300" >
             <img src={image_url || 'https://picsum.photos/300/200'} alt={title} className="w-full h-48 object-cover"/>

@@ -16,7 +16,7 @@ function Admin({ openItems, offers }) {
           status: 'open',
           title: newItem.title,
           description: newItem.description,
-          accepts: newItem.accepts,
+          accept: newItem.accept,
           rating: Number(newItem.rating),
           image_url: newItem.image_url,
         });
