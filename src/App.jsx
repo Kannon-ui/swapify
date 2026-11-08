@@ -60,20 +60,20 @@ function AppContent(){
             .select('*')
             .eq('owner_uid', ownerUid)
             .eq('status', 'open')
-            .order('create_at', {ascending:false})
+            .order('created_at', {ascending:false})
 
             const {data: close, error: errClosed} = await supabase
             .from('items')
             .select('*')
             .eq('owner_uid', ownerUid)
-            .eq('status', 'open')
-            .order('create_at', {ascending:false})
+            .eq('status', 'closed')
+            .order('created_at', {ascending:false})
 
-            if (errOpen) console.error('Error fetching open items:'. errOpen)
-            if (errClosed) console.error('Error fetching closed items:'. errClosed)
+            if (errOpen) console.error('Error fetching open items:', errOpen)
+            if (errClosed) console.error('Error fetching closed items:', errClosed)
 
                 setOpenItems(open || [])
-                setClosedTrades(closed || [])
+                setClosedTrades(close || [])
 
         }
 
@@ -95,10 +95,11 @@ function AppContent(){
             }
             
             const grouped = {}
-            data.forEach(offer => {
+            ;(data || []).forEach(offer => {
                 if(!grouped[offer.item_id]) grouped[offer.item_id] = []
-                grouped[offer.itm_id].push(offer)
+                grouped[offer.item_id].push(offer)
             })
+            setOffers(grouped)
         }
 
         catch(error) {
