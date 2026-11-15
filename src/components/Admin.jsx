@@ -12,7 +12,7 @@ function Admin({ openItems, offers }) {
       const { error } = await supabase
         .from('items')
         .insert({
-          owner_uid: 'test-owner',
+          owner_uid: '6315dbb8-18ec-4a9f-b8e7-8eb5ce74b4f3',
           status: 'open',
           title: newItem.title,
           description: newItem.description,

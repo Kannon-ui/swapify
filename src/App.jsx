@@ -12,6 +12,8 @@ import Admin from './components/Admin';
 import Home from './components/Home'
 import LoginModal from './components/LoginModal';
 import {supabase} from './supabase'
+import {AuthProvider , useAuth} from './AuthContext'
+
 
 
 function AppContent(){
@@ -19,7 +21,15 @@ function AppContent(){
 
     const [openItems, setOpenItems] = useState([])
     const [closedTrades, setClosedTrades] = useState([])
-    const ownerUid = '2b79a19c-ebd5-4073-8ca8-2aea836f7c8f'
+    const ownerUid = '6315dbb8-18ec-4a9f-b8e7-8eb5ce74b4f3'
+    const [showLogin ,setShowLogin] = useState(false)
+    const [offers, setOffers] = useState({})
+    const {session} = useAuth()
+    const sessionUser = session?.user ?? null;
+
+    const isLoggedIn = !!session
+
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const openChannel = supabase.channel('open-items')
@@ -54,6 +64,7 @@ function AppContent(){
     },[]);
     
     const fetchItems = async() => {
+        setLoading(true)
         try {
             const {data: open, error: errOpen} = await supabase
             .from('items')
@@ -79,6 +90,9 @@ function AppContent(){
 
         catch (error) {
             console.error('Fetch items failed: ', error)
+        }
+        finally {
+            setLoading(false)
         }
     }
 
@@ -107,25 +121,23 @@ function AppContent(){
         }
     }
 
-    const [isLoggedIn ,setIsLoggedIn] = useState(false)
-    const [showLogin ,setShowLogin] = useState(false)
-    const [offers, setOffers] = useState({})
 
 
-    const handleLogin = (pin) =>{
-        if (pin === '1234'){
-            setIsLoggedIn(true)
+
+    const handleLogin = async (email, password) =>{
+        const {error} = await supabase.auth.signInWithPassword({email, password})
+        if (error){
+            alert(error.message)
+        }
+        else{
             setShowLogin(false)
             navigate('/admin')
-        } else {
-            alert('Wrong Pin')
         }
+    };
 
-    }
-
-    const handleLogout = () => {
+    const handleLogout = async() => {
+        await supabase.auth.signOut()
         navigate('/')
-        setIsLoggedIn(false)
     }
 
 
@@ -142,15 +154,19 @@ function AppContent(){
             
             <main className="flex-grow p-4 pt-20">
                 <div className='max-w-6x1 mx-auto'>
-                    <Routes>
-                        <Route path ="/" element = { <Home openItems={openItems} closedTrades={closedTrades} offers = {offers} /> } />
-                        <Route  path = "/admin" 
-                            element = {isLoggedIn ? 
-                            <Admin openItems={openItems} 
-                            offers = {offers}
-                            />: 
-                            <Navigate to="/"/> } />
-                    </Routes>
+
+                    {loading ? ( 
+                        <div className="text-center text-gray-500">Loading...</div>
+                        ) : (
+                            <Routes>
+                                <Route path ="/" element = { <Home openItems={openItems} closedTrades={closedTrades} offers = {offers} /> } />
+                                <Route  path = "/admin" element = {isLoggedIn ? 
+                                <Admin openItems={openItems} offers = {offers}/>: 
+                                <Navigate to="/"/> } />
+                            </Routes>
+
+                        ) }
+                    
                 </div>                
             </main>
             {showLogin && (
@@ -167,7 +183,9 @@ function AppContent(){
 function App(){
     return(
         <Router>
-            <AppContent/>
+            <AuthProvider>
+                <AppContent/>
+            </AuthProvider>
         </Router>
     )
 }

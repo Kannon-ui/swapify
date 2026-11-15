@@ -1,7 +1,11 @@
+import { useState } from "react";
+
 function LoginModal({onClose,onSubmit}){
+    const [email, setEmail] = useState('') 
+    const [password, setPassword] = useState('')
     const handleSubmit = (e) => {
         e.preventDefault()
-        onSubmit(e.target.pin.value)
+        onSubmit(email, password) 
     }
     return(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -11,10 +15,18 @@ function LoginModal({onClose,onSubmit}){
                 </h2>
                 <form onSubmit = {handleSubmit}>
                     <input 
+                        type="email"
+                        placeholder="email" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)} 
+                        className="w-full p-2 border rounded- mb-4"              
+                    />
+                    <input 
                         type="password"
-                        name="pin"
-                        placeholder="Pin" 
-                        className="w-full p-2 border rounded- mb-4"
+                        placeholder="password" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)} 
+                        className="w-full p-2 border rounded- mb-4"              
                     />
                     <div className="flex justify-right gap-2">
                     <button type = "button" onClick={onClose} className="px-4 py-2 bg-gray-300 rounded">
