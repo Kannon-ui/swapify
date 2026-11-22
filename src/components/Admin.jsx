@@ -1,12 +1,11 @@
-import { useState } from 'react'; // Updated in L3: Added useState for modal state management
-import { supabase } from '../supabase'; // Updated in L3: Imported Supabase for async data writing
+import { useState } from 'react';
+import { supabase } from '../supabase';
 import Card from './Card';
-import AddItemModal from './AdditemModal'; // Updated in L3: Imported new AddItemModal for form handling
+import AddItemModal from './AdditemModal';
 
 function Admin({ openItems, offers }) {
-  const [showAddModal, setShowAddModal] = useState(false); // Updated in L3: State to control add item modal visibility
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  // Updated in L3: Added async handler for form submission to write new item to Supabase with validation
   const handleAddItem = async (newItem) => {
     try {
       const { error } = await supabase
@@ -29,12 +28,71 @@ function Admin({ openItems, offers }) {
     }
   };
 
+  const handleDecline = async (itemId, offerId) => {
+    try {
+      const { error } = await supabase
+        .from('offers')
+        .update({ status: 'declined' })
+        .eq('id', offerId);
+
+      if (error) throw error; // Added so Supabase errors are caught
+    } catch (error) {
+      console.error('Error declining offer:', error.message);
+      alert('Failed to decline offer');
+    }
+  };
+
+  const handleAccept = async (itemId, offerId) => {
+    try {
+      // Fixed 'date: item' typo -> 'data: item'
+      const { data: item, error: itemError } = await supabase
+        .from('items')
+        .select()
+        .eq('id', itemId)
+        .single();
+
+      if (itemError || item.status !== 'open') {
+        alert('Item already closed or error fetching');
+        return;
+      }
+
+      const { error: declineError } = await supabase
+        .from('offers')
+        .update({ status: 'declined' })
+        .eq('item_id', itemId)
+        .neq('id', offerId)
+        .eq('status', 'pending');
+
+      if (declineError) throw declineError;
+
+      const { data: acceptedOffer, error: acceptError } = await supabase
+        .from('offers')
+        .update({ status: 'accepted' })
+        .eq('id', offerId)
+        .select()
+        .single();
+
+      if (acceptError) throw acceptError;
+
+      const summary = `Swapped with ${acceptedOffer.name} for ${acceptedOffer.proposal}`;
+
+      const { error: closeError } = await supabase
+        .from('items')
+        .update({ status: 'closed', summary, date: new Date().toISOString() })
+        .eq('id', itemId);
+
+      if (closeError) throw closeError;
+    } catch (error) {
+      console.error('Error accepting offer:', error.message);
+      alert('Failed to accept offer');
+    }
+  };
+
   return (
     <section>
       <h2 className="text-3xl font-bold mb-8 text-blue-600">Admin Dashboard – View Offers</h2>
       <p className="text-gray-600 mb-6">Only you can see contact info. Admin Login mode!</p>
 
-      {/* Updated in L3: Added button to trigger add item modal */}
       <button
         onClick={() => setShowAddModal(true)}
         className="mb-6 bg-blue-500 text-white px-6 py-3"
@@ -43,18 +101,25 @@ function Admin({ openItems, offers }) {
       </button>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {openItems.map(item => (
+        {openItems.map((item) => (
           <Card
             key={item.id}
             type="open"
             {...item}
             isOwner={true}
             offers={offers[item.id] || []}
+            onDecline={handleDecline}
+            onAccept={handleAccept}
           />
         ))}
       </div>
 
-      {showAddModal && <AddItemModal onClose={() => setShowAddModal(false)} onSubmit={handleAddItem} />} {/* Updated in L3: Conditional render of new modal */}
+      {showAddModal && (
+        <AddItemModal
+          onClose={() => setShowAddModal(false)}
+          onSubmit={handleAddItem}
+        />
+      )}
     </section>
   );
 }

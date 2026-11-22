@@ -1,4 +1,4 @@
-function Card({type, image_url, title, rating, description, accept, date, summary, onProposeSwap, isOwner = false, offers = []}){
+function Card({type, image_url, title, rating, description, accept, date, summary, onProposeSwap, isOwner = false, offers = [] , onAccept, onDecline}) {
     const tags = accept ? accept.split(' or ').map(tag=> tag.trim()) : [];
     return(
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-1g hover:scale-105 transition duration-300" >
@@ -39,7 +39,21 @@ function Card({type, image_url, title, rating, description, accept, date, summar
                         {offers.length > 0 ?(
                             offers.map(offer => (
                                 <div key={offer.id} className="text-sm text-gray-700 mb-1">
-                                    {offer.name} - {offer.contact} - {offer.propose}
+                                <strong>{offer.name}</strong> - {offer.contact} <br /> 
+                                {offer.propose}
+                                <span className={`font-bold ${offer.status === 'accepted' ? 'text-green-500' : offer.status === 'declined' ? 'text-red-500' : 'text-gray-500'}`}>
+                                    {offer.status ? offer.status : 'PENDING'}
+                                </span>
+
+                                {offer.status === 'pending' && (
+                                    <div className="flex gap-2 mt-2">
+                                        <button onClick={() => onAccept(offer.item_id, offer.id)} className="bg-green-500 text-white rounded"> 
+                                            Accept
+                                        </button>
+                                        <button onClick={() => onDecline(offer.item_id, offer.id)} className="bg-red-500 text-white rounded">
+                                            Decline
+                                        </button>
+                                    </div>
                                 </div>
                         ))
                     ) : (
